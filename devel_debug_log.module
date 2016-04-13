@@ -36,3 +36,13 @@ function ddl($message, $title = '') {
     ]);
   $query->execute();
 }
+
+function devel_debug_log_theme($existing, $type, $theme, $path) {
+  return array(
+    'devel_debug_log_row' => array(
+      'variables' => array(
+        'content' => NULL,
+      ),
+    )
+  );
+}

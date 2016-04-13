@@ -34,9 +34,9 @@ class DevelDebugLogController extends ControllerBase {
   }
 
   public function listLogs() {
-    // TODO Add pagination.
-    $results = $this->database->select('devel_debug_log', 'm')
-      ->fields('m', ['timestamp', 'title', 'message', 'serialized'])
+    $query = $this->database->select('devel_debug_log', 'm')
+      ->extend('Drupal\Core\Database\Query\PagerSelectExtender');
+    $results = $query->fields('m', ['timestamp', 'title', 'message', 'serialized'])
       ->orderBy('id', 'desc')
       ->execute();
 
@@ -46,13 +46,11 @@ class DevelDebugLogController extends ControllerBase {
         $result->message = unserialize($result->message);
       }
 
-      // TODO Find a way to catch the output of kint() and print it inside the table, maybe ob_start() and others.
-      kint($result->message);
       $rows[] = [
         'title' => $result->title,
         'time' => \Drupal::service('date.formatter')
             ->format($result->timestamp, 'short'),
-        'message' => '',
+        'message' => $this->ob_kint($result->message),
       ];
     }
 
@@ -62,9 +60,25 @@ class DevelDebugLogController extends ControllerBase {
       ];
     }
 
-    return [
-      '#theme' => 'table',
-      '#rows' => $rows,
+    $build = [
+      'messages' => [
+        '#theme' => 'devel_debug_log_row',
+        '#content' => $rows,
+      ],
+      'pager' => [
+        '#type' => 'pager'
+      ],
     ];
+
+    return $build;
+  }
+
+  private function ob_kint($message) {
+    ob_start();
+    kint($message);
+    $output = ob_get_contents();
+    ob_end_clean();
+
+    return $output;
   }
 }
