@@ -1,0 +1,38 @@
+<?php
+
+/**
+ * @file
+ * Contains Drupal\devel_debug_log\devel_debug_log.module.
+ */
+
+
+/**
+ * Saves a debug message.
+ *
+ * @param mixed $message
+ *  A debug message to save, which can be:
+ *    - string: saved as it is;
+ *    - object/array: serialized before saving;
+ *
+ * @param string $title
+ *  Title of the debug message.
+ */
+function ddl($message, $title = '') {
+  if (is_array($message) || is_object($message)) {
+    $message = serialize($message);
+    $serialized = TRUE;
+  }
+  else {
+    $serialized = FALSE;
+  }
+
+  $connection = \Drupal::database();
+  $query = $connection->insert('devel_debug_log')
+    ->fields([
+      'timestamp' => REQUEST_TIME,
+      'title' => $title,
+      'message' => isset($message) ? $message : 'NULL',
+      'serialized' => $serialized ? 1 : 0,
+    ]);
+  $query->execute();
+}
