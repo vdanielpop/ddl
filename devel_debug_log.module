@@ -28,20 +28,21 @@ function ddl($message, $title = '') {
 
   $connection = \Drupal::database();
   $query = $connection->insert('devel_debug_log')
-    ->fields([
+    ->fields(array(
       'timestamp' => REQUEST_TIME,
       'title' => $title,
       'message' => isset($message) ? $message : 'NULL',
       'serialized' => $serialized ? 1 : 0,
-    ]);
+    ));
   $query->execute();
 }
 
 function devel_debug_log_theme($existing, $type, $theme, $path) {
   return array(
-    'devel_debug_log_row' => array(
+    'devel_debug_log_list' => array(
       'variables' => array(
         'content' => NULL,
+        'delete_form' => NULL,
       ),
     )
   );

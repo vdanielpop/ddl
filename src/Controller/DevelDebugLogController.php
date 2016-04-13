@@ -25,7 +25,7 @@ class DevelDebugLogController extends ControllerBase {
   }
 
   /**
-   * TableSortExampleController constructor.
+   * DevelDebugLogController constructor.
    *
    * @param \Drupal\Core\Database\Connection $database
    */
@@ -46,29 +46,30 @@ class DevelDebugLogController extends ControllerBase {
         $result->message = unserialize($result->message);
       }
 
-      $rows[] = [
+      $rows[] = array(
         'title' => $result->title,
         'time' => \Drupal::service('date.formatter')
             ->format($result->timestamp, 'short'),
         'message' => $this->ob_kint($result->message),
-      ];
+      );
     }
 
     if (empty($rows)) {
-      return [
-        '#markup' => t('No messages'),
-      ];
+      return array(
+        '#markup' => t('No debug messages.'),
+      );
     }
 
-    $build = [
-      'messages' => [
-        '#theme' => 'devel_debug_log_row',
+    $build = array(
+      'messages' => array(
+        '#theme' => 'devel_debug_log_list',
         '#content' => $rows,
-      ],
-      'pager' => [
+        '#delete_form' => \Drupal::formBuilder()->getForm('Drupal\devel_debug_log\Form\DevelDebugLogDeleteForm'),
+      ),
+      'pager' => array(
         '#type' => 'pager'
-      ],
-    ];
+    ),
+  );
 
     return $build;
   }
