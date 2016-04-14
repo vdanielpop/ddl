@@ -13,14 +13,27 @@
  *  A debug message to save, which can be:
  *    - string: saved as it is;
  *    - object/array: serialized before saving;
+
+ *  Currently, there's development going on regarding the serialization part,
+ * since most of the data in D8 contains references to injected services and
+ * maybe even plugins.
+ *  A discussion about this topic can be found here:
+ *  @see https://www.drupal.org/node/2705731
  *
  * @param string $title
  *  Title of the debug message.
  */
 function ddl($message, $title = '') {
   if (is_array($message) || is_object($message)) {
-    $message = serialize($message);
-    $serialized = TRUE;
+    $serializer = \Drupal::service('serializer');
+    try {
+      $message = $serializer->serialize($message, 'json');
+      $serialized = TRUE;
+    } catch(Exception $e) {
+      watchdog_exception('devel_debug', $e);
+      $message = "Data unserializable. Try narrowing the input object/array.";
+      $serialized = FALSE;
+    }
   }
   else {
     $serialized = FALSE;
@@ -37,6 +50,9 @@ function ddl($message, $title = '') {
   $query->execute();
 }
 
+/**
+ * Implements hook_theme().
+ */
 function devel_debug_log_theme($existing, $type, $theme, $path) {
   return array(
     'devel_debug_log_list' => array(
