@@ -21,7 +21,7 @@ class DevelDebugLogController extends ControllerBase {
   /**
    * The Serializer service.
    *
-   * @var \Drupal\rest\Plugin\views\style\Serializer
+   * @var Symfony\Component\Serializer\Serializer;
    */
   protected $serializer;
 
