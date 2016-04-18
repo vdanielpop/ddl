@@ -75,21 +75,17 @@ class DevelDebugLogController extends ControllerBase {
   public function listLogs() {
     $query = $this->database->select('devel_debug_log', 'm')
       ->extend('Drupal\Core\Database\Query\PagerSelectExtender');
-    $results = $query->fields('m', ['timestamp', 'title', 'message', 'serialized'])
+    $results = $query->fields('m', ['timestamp', 'title', 'message'])
       ->orderBy('id', 'desc')
       ->execute();
 
     $rows = [];
     foreach ($results as $result) {
-      if ($result->serialized) {
-        $result->message = $this->serializer->unserialize($result->message);
-      }
-
       $rows[] = array(
         'title' => $result->title,
         'time' => $this->dateFormatter
             ->format($result->timestamp, 'short'),
-        'message' => $this->ob_kint($result->message),
+        'message' => $result->message,
       );
     }
 
@@ -111,27 +107,5 @@ class DevelDebugLogController extends ControllerBase {
   );
 
     return $build;
-  }
-
-  /**
-   * Provides debug output for later printing.
-   *
-   *  Usually, kint() outputs the debug information as the first thing after the
-   * <body> tag. This function allows you to get that output and use it for
-   * later printing.
-   *
-   * @param mixed $message
-   *  The data that's displayed for debugging.
-   *
-   * @return string
-   *  The debug information.
-   */
-  private function ob_kint($message) {
-    ob_start();
-    kint($message);
-    $output = ob_get_contents();
-    ob_end_clean();
-
-    return $output;
   }
 }

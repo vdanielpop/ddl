@@ -24,20 +24,10 @@
  *  Title of the debug message.
  */
 function ddl($message, $title = '') {
-  if (is_array($message) || is_object($message)) {
-    $serializer = \Drupal::service('serializer');
-    try {
-      $message = $serializer->serialize($message, 'json');
-      $serialized = TRUE;
-    } catch(Exception $e) {
-      watchdog_exception('devel_debug', $e);
-      $message = "Data unserializable. Try narrowing the input object/array.";
-      $serialized = FALSE;
-    }
-  }
-  else {
-    $serialized = FALSE;
-  }
+  $serialized = FALSE;
+  $message = devel_debug_log_ob_kint($message);
+  // TODO Find a way to store the initial message, instead of storing the entire
+  // debug markup returned by kint().
 
   $connection = \Drupal::database();
   $query = $connection->insert('devel_debug_log')
@@ -62,4 +52,25 @@ function devel_debug_log_theme($existing, $type, $theme, $path) {
       ),
     )
   );
+}
+
+/**
+ * Provides debug output for later printing.
+ *
+ * kint() outputs the debug information at the top of the page. This function
+ * allows you to get the output and use it for later printing.
+ *
+ * @param mixed $message
+ *  The data that's displayed for debugging.
+ *
+ * @return string
+ *  The debug information.
+ */
+function devel_debug_log_ob_kint($message) {
+  ob_start();
+  kint($message);
+  $output = ob_get_contents();
+  ob_end_clean();
+
+  return $output;
 }
