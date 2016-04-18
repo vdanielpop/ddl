@@ -13,7 +13,7 @@
  *  A debug message to save, which can be:
  *    - string: saved as it is;
  *    - object/array: serialized before saving;
-
+ *
  *  Currently, there's development going on regarding the serialization part,
  * since most of the data in D8 contains references to injected services and
  * maybe even plugins.
@@ -38,6 +38,36 @@ function ddl($message, $title = '') {
       'serialized' => $serialized ? 1 : 0,
     ));
   $query->execute();
+}
+
+/**
+ * Checks if the message has already been saved during the current page request,
+ * and saves the message only if it is not a repetition of a previous one.
+ *
+ * @param $message
+ *   A debug message to save, which can be:
+ *   - string: saved as is.
+ *   - object or array: saved serialized.
+ * @param string $title
+ *  Title for the debug message.
+ */
+function ddl_once($message, $title = '') {
+  $message_history = &drupal_static(__FUNCTION__);
+
+  if (!isset($message_history)) {
+    $message_history = array();
+  }
+
+  $serialized = serialize($message);
+  $hash = md5($serialized);
+
+  if (in_array($hash, $message_history)) {
+    return;
+  }
+
+  $message_history[] = $hash;
+
+  ddl($message, $title);
 }
 
 /**
